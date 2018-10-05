@@ -7,6 +7,7 @@ package cg1_20180816;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
 /**
@@ -39,6 +40,14 @@ public class FrameJogo extends javax.swing.JFrame implements Runnable{
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                formKeyReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -53,6 +62,40 @@ public class FrameJogo extends javax.swing.JFrame implements Runnable{
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+        // TODO add your handling code here:
+        switch (evt.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                left = true;
+                break;
+            case KeyEvent.VK_RIGHT:
+                right = true;
+                break;
+            case KeyEvent.VK_R:
+                restartGame = true;
+                break;
+            default:
+                break;
+        }
+    }//GEN-LAST:event_formKeyPressed
+
+    private void formKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyReleased
+        // TODO add your handling code here:
+        switch (evt.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                left = false;
+                break;
+            case com.sun.glass.events.KeyEvent.VK_RIGHT:
+                right = false;
+                break;
+            case com.sun.glass.events.KeyEvent.VK_R:
+                restartGame = false;
+                break;
+            default:
+                break;
+        }
+    }//GEN-LAST:event_formKeyReleased
 
     /**
      * @param args the command line arguments
@@ -118,25 +161,73 @@ public class FrameJogo extends javax.swing.JFrame implements Runnable{
         }
         
         while(true){
+            
+            if(left){
+                player.setIncX(-1);
+            }else if(right){
+                player.setIncX(1);
+            }else{
+                player.setIncX(0);
+            }
+            
             g = getBufferStrategy().getDrawGraphics();
             //Clear screen
-            g.setColor(Color.BLACK);
+            g.setColor(Color.GREEN);
             g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(Color.BLACK);
+            g.fillRect(100, 0, getWidth()-200, getHeight());
             g.setColor(Color.YELLOW);
-            for(int i=0;i<4;i++){
-                g.fillRect(getWidth()/2, i*80, 20, 60);
+            for(int i=0;i<5;i++){
+                g.fillRect(getWidth()/2-5, i*80, 10, 60);
             }
             
             for(Base b : lista){
                 if(player.colisao(b)){
-                    System.out.println("BATEU");
+                   g.setColor(Color.RED);
+                   g.drawString("FIM de JOGO - Tecle R para Reiniciar", 100, 100);
+                   endGame = true;
+                   b.setIncY(0);
+                   b.setY(0);
                 }
+            }
+
+            for(Base b : lista){
+            b.mover();
             }
             
             for(Base b : lista){
-                b.mover();
                 b.desenhar(g);
             }
+            
+
+            
+            for(Base b: lista){
+                Colisao aux = b.trataColisao(getWidth(), getHeight());
+                if(aux == Colisao.DOWN){
+                    lixo.add(b);
+                }
+            }
+            
+            lista.removeAll(lixo);
+            for(Base b: lixo){
+                b.setY(0);
+                b.setIncY(1);
+            }
+            lista.addAll(lixo);
+            
+            /*if(endGame && restartGame){
+                for (int i=0;i<5;i++){
+                    CarroNPC c;
+                    if(r.nextBoolean()){
+                         c = new CarroNPC("img/npc_resize.png");
+                         lista.add(c);
+                    }else{
+                        c = new CarroNPC("img/police_resize.png");
+                        lista.add(c);
+                    }
+                }
+            }*/
+            
             
             g.dispose();
             getBufferStrategy().show();
